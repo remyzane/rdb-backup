@@ -1,0 +1,32 @@
+
+backup-path: /backup-path
+
+postgresql:
+  database_1:
+    ignore: log_yyyymmdd log_*
+
+  database_2:
+    ignore: "table1 table2
+     table3 table4 table5"
+    table_6: select * from table_6 where create_time > yyyymmdd
+    table_7:
+      section_1: select * from table_7 where type = 1
+      section_2: select * from table_7 where type = 2
+
+mysql:
+  dba_username: root
+  dba_password: xxxx
+
+  database_1:
+    alias: database_1_mysql
+
+  database_10:
+    ignore: log_yyyymmdd log_*
+
+  database_11:
+    ignore: "table1 table2
+     table3 table4 table5"
+    table_6: select * from table_6 where create_time > yyyymmdd
+    table_7:
+      section_1: select * from table_7 where type = 1
+      section_2: select * from table_7 where type = 2
