@@ -1,0 +1,29 @@
+
+communal:
+
+  backup_root: /backup-root
+  backup_path: "{db_name}/{table_name}"
+
+  include:
+    - tests.my_processor
+
+
+dbms0:
+  __class__:
+    processor: my_db_processor
+    param_a: aaa
+    param_b: bbb
+
+  database_1:
+    table_1:
+      processor: my_tb_processor
+      param1: xxx
+      param2: xxx
+
+
+dbms_1:
+  __class__:
+    processor: postgresql
+
+  database_1:
+    ignore: log_yyyymmdd log_*

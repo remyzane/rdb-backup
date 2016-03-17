@@ -1,32 +1,31 @@
 
-backup-path: /backup-path
+communal:
 
-postgresql:
+  backup_root: /backup-root
+  backup_path: "{db_name}/{table_name}"   # {dbms_name}  {date_time}
+
+  #include:   # you customization database and table processor
+  #  - python_path.python_module
+
+
+dbms_1:
+  __dbms__:
+    processor: postgresql   # mysql  |  postgresql  |  defined_youself
+
   database_1:
-    ignore: log_yyyymmdd log_*
+    __db__:
+      ignore: "table1 table2 log_yyyymmdd log_*"
 
   database_2:
-    ignore: "table1 table2
-     table3 table4 table5"
-    table_6: select * from table_6 where create_time > yyyymmdd
-    table_7:
-      section_1: select * from table_7 where type = 1
-      section_2: select * from table_7 where type = 2
+    table_1: select * from table_6 where create_time > yyyymmdd
+    table_3:
+      processor: customization_processor  # default  |  defined_youself
+      param1: xxx
+      param2: xxx
 
-mysql:
-  dba_username: root
-  dba_password: xxxx
 
-  database_1:
-    alias: database_1_mysql
-
-  database_10:
-    ignore: log_yyyymmdd log_*
-
-  database_11:
-    ignore: "table1 table2
-     table3 table4 table5"
-    table_6: select * from table_6 where create_time > yyyymmdd
-    table_7:
-      section_1: select * from table_7 where type = 1
-      section_2: select * from table_7 where type = 2
+dbms2:
+  __dbms__:
+    processor: mysql
+    username: root
+    password: xxxx
