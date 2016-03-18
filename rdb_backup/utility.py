@@ -64,6 +64,6 @@ def get_config(file_path, prefix=None):
             db_config = copy.deepcopy(db_params)
             db_config.update(copy.deepcopy(dbms_config))
             db_config['backup_path'] = db_config['backup_path'].replace('{db_name}', db_name)
-            database = processor_class(db_name, db_config)
+            database = processor_class(db_name, db_config, tbs)
             databases.append(database)
     return databases

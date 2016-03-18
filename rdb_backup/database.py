@@ -1,17 +1,31 @@
 
 import os
 
+from rdb_backup.table import table_processors
+
 
 class DatabaseProcessor(object):
 
     processor_name = None
 
-    def __init__(self, db_name, config):
+    def __init__(self, db_name, db_config, tb_config):
         self.db_name = db_name
-        self.backup_root = config.pop('backup_root')
-        self.backup_path = config.pop('backup_path')
-        self.ignore = config.pop('ignore', None)
-        self.define = config    # table define
+        self.backup_root = db_config.pop('backup_root')
+        self.backup_path = db_config.pop('backup_path')
+        self.ignore = db_config.pop('ignore', None)
+        self.define = {}    # table define
+        for tb_name, define in tb_config.items():
+            table_processor = 'default'
+            selector = None
+            params = None
+            if type(define) == str:
+                selector = define
+            elif type(define) == dict:
+                selector = define.pop('selector', None)
+                table_processor = define.pop('processor', 'default')
+                params = define
+            processor_class = table_processors[table_processor]
+            self.define[tb_name] = processor_class(self, tb_name, params, selector)
 
     def get_path(self, table_name, section_name=None):
         self.config['backup_path'] = self.config['backup_path'].replace('{date_time}', '2222222')
@@ -27,20 +41,20 @@ class DatabaseProcessor(object):
         pass
 
 
-class Mysql(DatabaseProcessor):
+class MysqlLocal(DatabaseProcessor):
 
     processor_name = 'mysql'
 
-    def __init__(self, db_name, config):
-        self.username = config.pop('username')
-        self.password = config.pop('password')
-        super().__init__(db_name, config)       # super init must be on the back
+    def __init__(self, db_name, db_config, tb_config):
+        super().__init__(db_name, db_config, tb_config)
+        self.username = db_config.pop('username')
+        self.password = db_config.pop('password')
 
     def backup(self):
         pass
 
 
-class Postgres(DatabaseProcessor):
+class PostgresLocal(DatabaseProcessor):
 
     processor_name = 'postgresql'
 

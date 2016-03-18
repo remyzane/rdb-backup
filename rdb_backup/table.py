@@ -3,8 +3,10 @@ class TableProcessor(object):
 
     processor_name = None
 
-    # def __init__(self):
-    #     pass
+    def __init__(self, db, tb_name, define=None, selector=None):
+        self.db = db
+        self.tb_name = tb_name
+        self.selector = selector
 
     def backup(self):
         pass

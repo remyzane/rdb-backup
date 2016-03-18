@@ -11,20 +11,11 @@ communal:
 dbms0:
   __dbms__:
     processor: my_db_processor
-    param_a: aaa
-    param_b: bbb
+    customization_param_a: aaa
+    customization_param_b: bbb
 
   database_1:
     table_1:
       processor: my_tb_processor
-      param1: xxx
-      param2: xxx
-
-
-dbms_1:
-  __dbms__:
-    processor: postgresql
-
-  database_1:
-    __db__:
-      ignore: log_yyyymmdd log_*
+      customization_param1: xxx
+      customization_param2: yyy
