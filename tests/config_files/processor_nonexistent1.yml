@@ -1,0 +1,9 @@
+
+communal:
+  backup_root: /backup-root
+  backup_path: '{db_name}/{table_name}'
+
+
+dbms0:
+  __dbms__:
+    processor: nonexistent_processor

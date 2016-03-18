@@ -1,3 +1,9 @@
+
+
+class ProcessorNonexistent(Exception):
+    pass
+
+
 # #!/usr/bin/env python
 # # -*- coding: utf-8 -*-
 #

@@ -1,6 +1,7 @@
 
 import os
 
+from rdb_backup import ProcessorNonexistent
 from rdb_backup.table import table_processors
 
 
@@ -24,7 +25,11 @@ class DatabaseProcessor(object):
                 selector = define.pop('selector', None)
                 table_processor = define.pop('processor', 'default')
                 params = define
-            processor_class = table_processors[table_processor]
+
+            processor_class = table_processors.get(table_processor)
+            if not processor_class:
+                raise ProcessorNonexistent('table processor [%s] nonexistent.' % table_processor)
+
             self.define[tb_name] = processor_class(self, tb_name, params, selector)
 
     def get_path(self, table_name, section_name=None):

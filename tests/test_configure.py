@@ -1,5 +1,7 @@
+import pytest
 
-from rdb_backup.utility import get_config, template_path
+from rdb_backup import ProcessorNonexistent
+from rdb_backup.utility import get_config, template_path, tests_config
 
 
 def test_template():
@@ -26,3 +28,25 @@ def test_template():
             assert table2.db == db
             assert table2.tb_name == 'table_2'
             assert table2.selector == 'select * from table_2 where create_time > yyyymmdd'
+
+
+def test_processor_customize():
+    dbs = get_config('processor_customize.yml', tests_config)
+    for db in dbs:
+        if db.db_name == 'database_1':
+            assert db.processor_name == 'my_db_processor'
+            assert db.__class__.__name__ == 'MyDatabaseProcessor'
+            assert db.customization_param_a == 'aaa'
+            assert db.customization_param_b == 'bbb'
+            table1 = db.define['table_1']
+            assert table1.db == db
+            assert table1.tb_name == 'table_1'
+            assert table1.processor_name == 'my_tb_processor'
+            assert table1.__class__.__name__ == 'MyTableProcessor'
+            assert table1.customization_param1 == 'xxx'
+            assert table1.customization_param2 == 'yyy'
+
+
+def test_processor_nonexistent():
+    pytest.raises(ProcessorNonexistent, get_config, 'processor_nonexistent1.yml', tests_config)
+    pytest.raises(ProcessorNonexistent, get_config, 'processor_nonexistent2.yml', tests_config)

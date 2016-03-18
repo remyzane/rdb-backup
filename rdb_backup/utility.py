@@ -4,6 +4,7 @@ import yaml
 import copy
 from importlib import import_module
 
+from rdb_backup import ProcessorNonexistent
 from rdb_backup.table import table_processors, TableProcessor
 from rdb_backup.database import database_processors, DatabaseProcessor
 
@@ -53,12 +54,14 @@ def get_config(file_path, prefix=None):
     databases = []
     for dbms_name, dbs in config.items():
         dbms_params = dbs.pop('__dbms__')
-        dbms_class = dbms_params.pop('processor')
+        dbms_processor = dbms_params.pop('processor')
         dbms_config = copy.deepcopy(dbms_params)
         dbms_config.update(copy.deepcopy(communal_config))
         dbms_config['backup_path'] = dbms_config['backup_path'].replace('{dbms_name}', dbms_name)
 
-        processor_class = database_processors[dbms_class]
+        processor_class = database_processors.get(dbms_processor)
+        if not processor_class:
+            raise ProcessorNonexistent('database processor [%s] nonexistent.' % dbms_processor)
         for db_name, tbs in dbs.items():
             db_params = tbs.pop('__db__', {}) if tbs else {}
             db_config = copy.deepcopy(db_params)
