@@ -2,14 +2,14 @@
 communal:
 
   backup_root: /backup-root
-  backup_path: "{db_name}/{table_name}"
+  backup_path: '{db_name}/{table_name}'
 
   include:
     - tests.my_processor
 
 
 dbms0:
-  __class__:
+  __dbms__:
     processor: my_db_processor
     param_a: aaa
     param_b: bbb
@@ -22,8 +22,9 @@ dbms0:
 
 
 dbms_1:
-  __class__:
+  __dbms__:
     processor: postgresql
 
   database_1:
-    ignore: log_yyyymmdd log_*
+    __db__:
+      ignore: log_yyyymmdd log_*

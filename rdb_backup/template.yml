@@ -2,7 +2,7 @@
 communal:
 
   backup_root: /backup-root
-  backup_path: "{db_name}/{table_name}"   # {dbms_name}  {date_time}
+  backup_path: '{db_name}/{table_name}'   # {dbms_name}  {date_time}
 
   #include:   # you customization database and table processor
   #  - python_path.python_module
@@ -14,14 +14,8 @@ dbms_1:
 
   database_1:
     __db__:
-      ignore: "table1 table2 log_yyyymmdd log_*"
-
-  database_2:
-    table_1: select * from table_6 where create_time > yyyymmdd
-    table_3:
-      processor: customization_processor  # default  |  defined_youself
-      param1: xxx
-      param2: xxx
+      ignore: 'table2 table3 log_yyyymmdd log_*'
+      table_1: select * from table_6 where create_time > yyyymmdd
 
 
 dbms2:
@@ -29,3 +23,9 @@ dbms2:
     processor: mysql
     username: root
     password: xxxx
+
+  database_2:
+#    table_1:
+#      processor: customization_processor  # default  |  defined_youself
+#      param1: xxx
+#      param2: xxx

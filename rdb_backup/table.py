@@ -1,6 +1,8 @@
 
 class TableProcessor(object):
 
+    processor_name = None
+
     # def __init__(self):
     #     pass
 
@@ -13,7 +15,7 @@ class TableProcessor(object):
 
 class DefaultProcessor(TableProcessor):
 
-    name = 'default'
+    processor_name = 'default'
 
     def backup(self):
         pass
@@ -21,17 +23,17 @@ class DefaultProcessor(TableProcessor):
 
 class CompressProcessor(TableProcessor):
 
-    name = 'compress'
+    processor_name = 'compress'
 
 
 class SectionProcessor(TableProcessor):
 
-    name = 'section'
+    processor_name = 'section'
 
 
 class IncrementalProcessor(TableProcessor):
 
-    name = 'incremental'
+    processor_name = 'incremental'
 
     def __init__(self):
         pass
@@ -39,11 +41,11 @@ class IncrementalProcessor(TableProcessor):
 
 class IncrementalCompressProcessor(TableProcessor):
 
-    name = 'incremental_compress'
+    processor_name = 'incremental_compress'
 
     def __init__(self, compress_file_size):
         pass
 
 
 # generate in rdb_backup.utility.init_processor
-table_classes = {}
+table_processors = {}

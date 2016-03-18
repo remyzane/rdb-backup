@@ -5,9 +5,9 @@ from rdb_backup.database import DatabaseProcessor
 
 class MyTableProcessor(TableProcessor):
 
-    name = 'my_tb_processor'
+    processor_name = 'my_tb_processor'
 
 
 class MyDatabaseProcessor(DatabaseProcessor):
 
-    name = 'my_db_processor'
+    processor_name = 'my_db_processor'
