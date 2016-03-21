@@ -1,7 +1,6 @@
 import pytest
 
-from rdb_backup import ProcessorNonexistent
-from rdb_backup.utility import get_config, template_path, tests_config
+from rdb_backup.utility import get_config, template_path, tests_config, ProcessorNonexistent
 
 
 def test_template():

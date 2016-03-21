@@ -21,9 +21,13 @@ setup(
     url="https://github.com/remyzane/rdb-backup",
     packages=['rdb_backup'],
     test_suite="tests",
+    install_requires=[
+        'click',
+        'PyYAML',
+    ],
     entry_points={
         'console_scripts': [
-            'rdb-backup=rdb_backup:main',
+            'rdb-backup=rdb_backup.command:main',
         ],
     },
     classifiers=[

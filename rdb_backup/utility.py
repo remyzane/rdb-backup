@@ -1,15 +1,18 @@
-
 import os
+import time
 import yaml
 import copy
+import random
+import string
+import subprocess
 from importlib import import_module
-
-from rdb_backup import ProcessorNonexistent
-from rdb_backup.table import table_processors, TableProcessor
-from rdb_backup.database import database_processors, DatabaseProcessor
 
 template_path = os.path.realpath(os.path.join(__file__, '..', 'template.yml'))
 tests_config = os.path.realpath(os.path.join(__file__, '..', '..', 'tests', 'config_files'))
+
+
+class ProcessorNonexistent(Exception):
+    pass
 
 
 def load_yml(file_path, prefix=None):
@@ -24,6 +27,9 @@ def load_yml(file_path, prefix=None):
 
 
 def init_processor(processor_paths):
+    from rdb_backup.table import table_processors, TableProcessor
+    from rdb_backup.database import database_processors, DatabaseProcessor
+
     for processor_path in processor_paths:
         import_module(processor_path)
 
@@ -44,6 +50,7 @@ def get_config(file_path, prefix=None):
     :param file_path: configure file path
     :param prefix: configure file path prefix
     """
+    from rdb_backup.database import database_processors
     config = load_yml(file_path, prefix)
 
     # communal config
@@ -70,3 +77,20 @@ def get_config(file_path, prefix=None):
             database = processor_class(db_name, db_config, tbs)
             databases.append(database)
     return databases
+
+
+def run_shell(user, content, cwd='/tmp'):
+    file_path = '/tmp/' + ''.join(random.sample(string.ascii_letters, 20))
+    content = '#! /bin/sh%s%s' % (os.linesep, content)
+    with open(file_path, 'w') as file:
+        file.write(content)
+    os.system('chmod og+rx ' + file_path)
+    process = subprocess.Popen('su %s -c %s' % (user, file_path), shell=True, stdout=subprocess.PIPE, cwd=cwd)
+    time.sleep(1)
+    os.unlink(file_path)
+    return process
+
+
+def run_psql(db, sql, cwd='/tmp'):
+    content = 'psql %s -c "%s"' % (db, sql)
+    return run_shell('postgres', content, cwd)

@@ -1,8 +1,8 @@
 
 import os
 
-from rdb_backup import ProcessorNonexistent
 from rdb_backup.table import table_processors
+from rdb_backup.utility import ProcessorNonexistent
 
 
 class DatabaseProcessor(object):
