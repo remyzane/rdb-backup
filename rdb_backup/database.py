@@ -1,4 +1,3 @@
-
 import os
 
 from rdb_backup.table import table_processors
@@ -40,31 +39,18 @@ class DatabaseProcessor(object):
             return os.path.join(self.config['backup_path'], table_name)
 
     def backup(self):
-        pass
+        for table in self.tables():
+            print(table)
 
     def restore(self):
-        pass
+        for table in self.tables():
+            print(table)
 
+    def all_tables(self):
+        raise NotImplementedError
 
-class MysqlLocal(DatabaseProcessor):
-
-    processor_name = 'mysql'
-
-    def __init__(self, db_name, db_config, tb_config):
-        super().__init__(db_name, db_config, tb_config)
-        self.username = db_config.pop('username')
-        self.password = db_config.pop('password')
-
-    def backup(self):
-        pass
-
-
-class PostgresLocal(DatabaseProcessor):
-
-    processor_name = 'postgresql'
-
-    pass
-
+    def tables(self):
+        return self.all_tables()
 
 # generate in rdb_backup.utility.init_processor
 database_processors = {}

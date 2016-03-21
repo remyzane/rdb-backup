@@ -10,7 +10,7 @@ communal:
 
 dbms_1:
   __dbms__:
-    processor: postgresql   # mysql  |  postgresql  |  processor_defined_youself
+    processor: postgres   # mysql  |  postgres  |  processor_defined_youself
 
   database_1:
     __db__:

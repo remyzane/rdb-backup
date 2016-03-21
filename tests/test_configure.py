@@ -7,7 +7,7 @@ def test_template():
     dbs = get_config(template_path)
     for db in dbs:
         if db.db_name == 'database_1':
-            assert db.processor_name == 'postgresql'
+            assert db.processor_name == 'postgres'
             assert db.__class__.__name__ == 'PostgresLocal'
             assert db.backup_root == '/backup-root'
             assert db.backup_path == 'database_1/{table_name}'

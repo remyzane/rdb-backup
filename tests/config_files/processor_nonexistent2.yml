@@ -7,7 +7,7 @@ communal:
 
 dbms0:
   __dbms__:
-    processor: postgresql
+    processor: postgres
 
   database_1:
     table_1:

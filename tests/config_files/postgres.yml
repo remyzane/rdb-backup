@@ -2,11 +2,11 @@
 communal:
 
   backup_root: /tmp/_rdb_postgre_test_
-  backup_path: '{db_name}/{table_name}'   # {dbms_name}  {date_time}
+  backup_path: '{db_name}/{table_name}'
 
 dbms_1:
   __dbms__:
-    processor: postgresql   # mysql  |  postgresql  |  processor_defined_youself
+    processor: postgres
 
   database_1:
     __db__:
