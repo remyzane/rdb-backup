@@ -1,7 +1,10 @@
 import os
+import logging
 
 from rdb_backup.table import table_processors
 from rdb_backup.utility import ProcessorNonexistent
+
+log = logging.getLogger(__name__)
 
 
 class DatabaseProcessor(object):
@@ -50,6 +53,7 @@ class DatabaseProcessor(object):
             return os.path.join(self.config['backup_path'], table_name)
 
     def backup(self):
+        log.info('backup database [%s] ----------------------------------------' % self.db_name)
         for table in self.tables_need_process():
             print(table)
 
@@ -59,9 +63,14 @@ class DatabaseProcessor(object):
 
     def tables_need_process(self):
         tables = []
+        tables_ignored = []
         for table_name in self.tables_all():
-            if not self.__ignored(table_name):
+            if self.__ignored(table_name):
+                tables_ignored.append(table_name)
+            else:
                 tables.append(table_name)
+        if tables_ignored:
+            log.info('ignored tables: %s' % tables_ignored)
         return tables
 
     # implement in subclass

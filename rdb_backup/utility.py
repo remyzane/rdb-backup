@@ -1,12 +1,16 @@
 import os
+import sys
 import time
 import yaml
 import copy
 import random
 import string
+import logging
 import subprocess
 from importlib import import_module
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 
+POSIX = os.name != 'nt'
 template_path = os.path.realpath(os.path.join(__file__, '..', 'template.yml'))
 tests_config = os.path.realpath(os.path.join(__file__, '..', '..', 'tests', 'config_files'))
 
@@ -29,9 +33,10 @@ def load_yml(file_path, prefix=None):
 def init_processor(processor_paths):
     from rdb_backup.table import table_processors, TableProcessor
     from rdb_backup.database import database_processors, DatabaseProcessor
-    from rdb_backup.mysql import MysqlLocal         # regist in DatabaseProcessor's __subclasses__
-    from rdb_backup.postgres import PostgresLocal   # regist in DatabaseProcessor's __subclasses__
 
+    import_module('rdb_backup.mysql')
+    import_module('rdb_backup.postgres')
+    processor_paths = processor_paths + []
     for processor_path in processor_paths:
         import_module(processor_path)
 
@@ -58,6 +63,11 @@ def get_config(file_path, prefix=None):
     # communal config
     communal_config = config.pop('communal')
     init_processor(communal_config.pop('include', []))
+
+    # logging config
+    log_config = config.pop('logging', None)
+    if log_config:
+        set_logging(log_config, os.getcwd())
 
     # dbms config
     databases = []
@@ -96,3 +106,79 @@ def run_shell(user, content, cwd='/tmp'):
 def run_psql(db, sql, cwd='/tmp'):
     content = 'psql %s -c "%s"' % (db, sql)
     return run_shell('postgres', content, cwd)
+
+
+def multiply(expression):
+    """multiplication calculation
+
+    :param expression: string e.g. "1024*1024*50"
+    :return: integer
+    """
+    value = 1
+    for n in expression.split('*'):
+        value *= int(n)
+    return value
+
+
+class CustomizeLog(logging.Formatter):
+    def __init__(self, fmt=None, date_fmt=None):
+        logging.Formatter.__init__(self, fmt, date_fmt)
+
+    def format(self, record):
+        if record.levelname == 'WARNING': record.levelname = 'WARN '
+        if record.levelname == 'CRITICAL': record.levelname = 'FATAL'
+        record.levelname = record.levelname.ljust(5)
+        return logging.Formatter.format(self, record)
+
+
+def set_logging(config, root_path=''):
+    """setting logging
+
+    :param config: config dict
+    :param root_path:
+    """
+    default_format = CustomizeLog(config['format'])
+    handlers = {}
+
+    # console handler
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(default_format)
+    handlers['stream'] = handler
+
+    # customize handler
+    for handler_name, params in config['handler'].items():
+        handler_format = CustomizeLog(params['format']) if params.get('format') else default_format
+        handler_params = config['class'][params['class']].copy()
+        handler_params.update(params)
+        # create log dir
+        logfile = params['path'] if params['path'].startswith('/') else os.path.join(root_path, params['path'])
+        if not os.path.exists(os.path.dirname(logfile)):
+            os.makedirs(os.path.dirname(logfile))
+        # create handler
+        backup_count = handler_params['backup_count']
+        # which switches from one file to the next when the current file reaches a certain size.
+        if params['class'] == 'rotating_file':
+            max_size = multiply(handler_params['max_size'])
+            handler = RotatingFileHandler(logfile, 'a', max_size, backup_count, encoding='utf-8')
+        # rotating the log file at certain timed intervals.
+        elif params['class'] == 'time_rotating_file':
+            when = handler_params['when']
+            interval = handler_params['interval']
+            handler = TimedRotatingFileHandler(logfile, when, interval, backup_count, encoding='utf-8')
+        handler.setFormatter(handler_format)
+        handlers[handler_name] = handler
+
+    for module, params in config['logger'].items():
+        level = params['level'].upper()
+        handler_names = params['handler'].split()
+        propagate = params.get('propagate') or config['propagate']
+
+        if module == 'default':                 # define root log
+            logger = logging.getLogger()
+        else:
+            logger = logging.getLogger(module)  # define module's logging
+            logger.propagate = propagate        # judge whether repeatedly output to default logger
+
+        for handler_name in handler_names:
+            logger.addHandler(handlers[handler_name])
+        logger.setLevel(level)
