@@ -11,5 +11,5 @@ dbms_1:
   database_1:
     __db__:
 #      schema: public
-      ignore: 'session user_log'
+      ignore: 'session user_log use*'
 #    user: select * from table_1 where create_time > yyyymmdd

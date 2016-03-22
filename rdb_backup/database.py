@@ -12,7 +12,7 @@ class DatabaseProcessor(object):
         self.db_name = db_name
         self.backup_root = db_config.pop('backup_root')
         self.backup_path = db_config.pop('backup_path')
-        self.ignore = db_config.pop('ignore', None)
+        self.ignore_list = db_config.pop('ignore', '').split()
         self.define = {}    # table define
         for tb_name, define in tb_config.items():
             table_processor = 'default'
@@ -31,6 +31,17 @@ class DatabaseProcessor(object):
 
             self.define[tb_name] = processor_class(self, tb_name, params, selector)
 
+    def __ignored(self, name):
+        for item in self.ignore_list:
+            if item[-1] == '*':
+                if name.startswith(item[:-1]):
+                    return True
+                else:
+                    return False
+            elif item == name:
+                return True
+        return False
+
     def get_path(self, table_name, section_name=None):
         self.config['backup_path'] = self.config['backup_path'].replace('{date_time}', '2222222')
         if section_name:
@@ -39,18 +50,23 @@ class DatabaseProcessor(object):
             return os.path.join(self.config['backup_path'], table_name)
 
     def backup(self):
-        for table in self.tables():
+        for table in self.tables_need_process():
             print(table)
 
     def restore(self):
-        for table in self.tables():
+        for table in self.tables_need_process():
             print(table)
 
-    def all_tables(self):
-        raise NotImplementedError
+    def tables_need_process(self):
+        tables = []
+        for table_name in self.tables_all():
+            if not self.__ignored(table_name):
+                tables.append(table_name)
+        return tables
 
-    def tables(self):
-        return self.all_tables()
+    # implement in subclass
+    def tables_all(self):
+        raise NotImplementedError
 
 # generate in rdb_backup.utility.init_processor
 database_processors = {}

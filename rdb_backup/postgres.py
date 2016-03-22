@@ -8,7 +8,7 @@ class PostgresLocal(DatabaseProcessor):
 
     processor_name = 'postgres'
 
-    def all_tables(self):
+    def tables_all(self):
         process = run_psql(self.db_name, PG_TABLES)
         out = process.stdout.readlines()
         out = out[2:-2]

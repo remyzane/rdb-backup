@@ -29,8 +29,8 @@ def load_yml(file_path, prefix=None):
 def init_processor(processor_paths):
     from rdb_backup.table import table_processors, TableProcessor
     from rdb_backup.database import database_processors, DatabaseProcessor
-    from rdb_backup.mysql import MysqlLocal
-    from rdb_backup.postgres import PostgresLocal
+    from rdb_backup.mysql import MysqlLocal         # regist in DatabaseProcessor's __subclasses__
+    from rdb_backup.postgres import PostgresLocal   # regist in DatabaseProcessor's __subclasses__
 
     for processor_path in processor_paths:
         import_module(processor_path)
