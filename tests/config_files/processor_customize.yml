@@ -10,12 +10,12 @@ communal:
 
 dbms0:
   __dbms__:
-    processor: my_db_processor
+    processor: my_processor
     customization_param_a: aaa
     customization_param_b: bbb
 
   database_1:
     table_1:
-      processor: my_tb_processor
+      processor: my_processor
       customization_param1: xxx
       customization_param2: yyy

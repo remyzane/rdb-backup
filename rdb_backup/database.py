@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 
 from rdb_backup.table import table_processors
-from rdb_backup.utility import ProcessorNonexistent
+from rdb_backup.utility import ProcessorNonexistent, run_shell
 
 log = logging.getLogger(__name__)
 
@@ -20,14 +20,14 @@ class DatabaseProcessor(object):
         self.ignore_list = db_config.pop('ignore', '').split()
         self.define = {}    # table define
         for tb_name, define in tb_config.items():
-            table_processor = 'default'
+            table_processor = self.processor_name
             selector = None
             params = None
             if type(define) == str:
                 selector = define
             elif type(define) == dict:
                 selector = define.pop('selector', None)
-                table_processor = define.pop('processor', 'default')
+                table_processor = define.pop('processor', self.processor_name)
                 params = define
 
             processor_class = table_processors.get(table_processor)
@@ -55,16 +55,15 @@ class DatabaseProcessor(object):
 
     def backup(self):
         log.info('backup database [%s] ----------------------------------------' % self.name)
-
-        # db_path = os.path.dirname(self.backup_path)
-        # if not os.path.exists(db_path):
-        #     os.makedirs(db_path)
-        # structure_sql = os.path.join(db_path, '__structure__.sql')
-
-        # pg_dump --schema-only dbname > /var/lib/postgresql/sql/dbname.sql
+        db_path = self.backup_path.split('{table_name}')[0]
+        if not os.path.exists(db_path):
+            os.makedirs(db_path)
+        schema_sql_path = os.path.join(db_path, '__structure__.sql')
+        self.backup_schema(schema_sql_path)
 
         for table in self.tables_need_process():
             table.backup()
+        log.info('------------------------------ database [%s] backup completed' % self.name)
 
     def restore(self):
         for table in self.tables_need_process():
@@ -80,13 +79,17 @@ class DatabaseProcessor(object):
                 if table_name in self.define:
                     tables.append(self.define[table_name])
                 else:
-                    tables.append(table_processors['default'](self, table_name))
+                    tables.append(table_processors[self.processor_name](self, table_name, {}))
         if tables_ignored:
             log.info('ignored tables: %s' % tables_ignored)
         return tables
 
     # implement in subclass
     def tables_all(self):
+        raise NotImplementedError
+
+    # implement in subclass
+    def backup_schema(self, schema_path):
         raise NotImplementedError
 
 # generate in rdb_backup.utility.init_processor

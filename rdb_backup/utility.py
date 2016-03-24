@@ -100,11 +100,6 @@ def run_shell(user, content, cwd='/tmp'):
     return process
 
 
-def run_psql(db, sql, cwd='/tmp'):
-    content = 'psql %s -c "%s"' % (db, sql)
-    return run_shell('postgres', content, cwd)
-
-
 def multiply(expression):
     """multiplication calculation
 

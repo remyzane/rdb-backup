@@ -19,18 +19,6 @@ class TableProcessor(object):
         raise NotImplementedError
 
 
-class DefaultProcessor(TableProcessor):
-
-    processor_name = 'default'
-
-    def backup(self):
-        print(self.backup_path)
-        pass
-
-    def restore(self):
-        pass
-
-
 class CompressProcessor(TableProcessor):
 
     processor_name = 'compress'

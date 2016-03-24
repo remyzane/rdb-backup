@@ -33,14 +33,14 @@ def test_processor_customize():
     dbs = get_config('processor_customize.yml', tests_config)
     db = dbs[0]
     assert db.name == 'database_1'
-    assert db.processor_name == 'my_db_processor'
+    assert db.processor_name == 'my_processor'
     assert db.__class__.__name__ == 'MyDatabaseProcessor'
     assert db.customization_param_a == 'aaa'
     assert db.customization_param_b == 'bbb'
     table1 = db.define['table_1']
     assert table1.db == db
     assert table1.name == 'table_1'
-    assert table1.processor_name == 'my_tb_processor'
+    assert table1.processor_name == 'my_processor'
     assert table1.__class__.__name__ == 'MyTableProcessor'
     assert table1.customization_param1 == 'xxx'
     assert table1.customization_param2 == 'yyy'
