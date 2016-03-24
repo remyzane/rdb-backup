@@ -11,8 +11,8 @@ class DatabaseProcessor(object):
 
     processor_name = None
 
-    def __init__(self, db_name, db_config, tb_config):
-        self.db_name = db_name
+    def __init__(self, name, db_config, tb_config):
+        self.name = name
         self.backup_root = db_config.pop('backup_root')
         self.backup_path = db_config.pop('backup_path')
         self.ignore_list = db_config.pop('ignore', '').split()
@@ -45,21 +45,18 @@ class DatabaseProcessor(object):
                 return True
         return False
 
-    def get_path(self, table_name, section_name=None):
-        self.config['backup_path'] = self.config['backup_path'].replace('{date_time}', '2222222')
-        if section_name:
-            return os.path.join(self.config['backup_path'], table_name, section_name)
-        else:
-            return os.path.join(self.config['backup_path'], table_name)
+    def get_path(self, table_name):
+        backup_path = self.backup_path.replace('{date_time}', '2222222')
+        return backup_path.replace('{table_name}', table_name)
 
     def backup(self):
-        log.info('backup database [%s] ----------------------------------------' % self.db_name)
+        log.info('backup database [%s] ----------------------------------------' % self.name)
         for table in self.tables_need_process():
-            print(table)
+            table.backup()
 
     def restore(self):
         for table in self.tables_need_process():
-            print(table)
+            table.restore()
 
     def tables_need_process(self):
         tables = []
@@ -68,7 +65,10 @@ class DatabaseProcessor(object):
             if self.__ignored(table_name):
                 tables_ignored.append(table_name)
             else:
-                tables.append(table_name)
+                if table_name in self.define:
+                    tables.append(self.define[table_name])
+                else:
+                    tables.append(table_processors['default'](self, table_name))
         if tables_ignored:
             log.info('ignored tables: %s' % tables_ignored)
         return tables

@@ -3,16 +3,17 @@ class TableProcessor(object):
 
     processor_name = None
 
-    def __init__(self, db, tb_name, define=None, selector=None):
+    def __init__(self, db, name, define=None, selector=None):
         self.db = db
-        self.tb_name = tb_name
+        self.name = name
+        self.define = define
         self.selector = selector
 
     def backup(self):
-        pass
+        raise NotImplementedError
 
     def restore(self):
-        pass
+        raise NotImplementedError
 
 
 class DefaultProcessor(TableProcessor):
@@ -20,6 +21,9 @@ class DefaultProcessor(TableProcessor):
     processor_name = 'default'
 
     def backup(self):
+        print(self.db.get_path(self.name))
+
+    def restore(self):
         pass
 
 
