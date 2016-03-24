@@ -14,7 +14,6 @@ dbms_1:
 
   database_1:
     __db__:
-#      schema: public
       ignore: 'table3 log_yyyymmdd log_*'
     table_1: select * from table_1 where create_time > yyyymmdd
 

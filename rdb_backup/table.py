@@ -1,3 +1,5 @@
+import os
+
 
 class TableProcessor(object):
 
@@ -8,6 +10,7 @@ class TableProcessor(object):
         self.name = name
         self.define = define
         self.selector = selector
+        self.backup_path = db.backup_path.replace('{table_name}', name)
 
     def backup(self):
         raise NotImplementedError
@@ -21,7 +24,8 @@ class DefaultProcessor(TableProcessor):
     processor_name = 'default'
 
     def backup(self):
-        print(self.db.get_path(self.name))
+        print(self.backup_path)
+        pass
 
     def restore(self):
         pass
@@ -31,17 +35,32 @@ class CompressProcessor(TableProcessor):
 
     processor_name = 'compress'
 
+    def backup(self):
+        pass
+
+    def restore(self):
+        pass
+
 
 class SectionProcessor(TableProcessor):
 
     processor_name = 'section'
+
+    def backup(self):
+        pass
+
+    def restore(self):
+        pass
 
 
 class IncrementalProcessor(TableProcessor):
 
     processor_name = 'incremental'
 
-    def __init__(self):
+    def backup(self):
+        pass
+
+    def restore(self):
         pass
 
 
@@ -50,6 +69,12 @@ class IncrementalCompressProcessor(TableProcessor):
     processor_name = 'incremental_compress'
 
     def __init__(self, compress_file_size):
+        pass
+
+    def backup(self):
+        pass
+
+    def restore(self):
         pass
 
 

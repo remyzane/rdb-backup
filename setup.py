@@ -22,6 +22,7 @@ setup(
     packages=['rdb_backup'],
     test_suite="tests",
     install_requires=[
+        'pytest',
         'click',
         'PyYAML',
     ],

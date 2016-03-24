@@ -1,5 +1,6 @@
 import os
 import logging
+from datetime import datetime
 
 from rdb_backup.table import table_processors
 from rdb_backup.utility import ProcessorNonexistent
@@ -11,10 +12,11 @@ class DatabaseProcessor(object):
 
     processor_name = None
 
-    def __init__(self, name, db_config, tb_config):
+    def __init__(self, dbms, name, db_config, tb_config):
+        self.dbms = dbms
         self.name = name
         self.backup_root = db_config.pop('backup_root')
-        self.backup_path = db_config.pop('backup_path')
+        self.backup_path = self.__get_path(db_config.pop('backup_path'))
         self.ignore_list = db_config.pop('ignore', '').split()
         self.define = {}    # table define
         for tb_name, define in tb_config.items():
@@ -45,12 +47,22 @@ class DatabaseProcessor(object):
                 return True
         return False
 
-    def get_path(self, table_name):
-        backup_path = self.backup_path.replace('{date_time}', '2222222')
-        return backup_path.replace('{table_name}', table_name)
+    def __get_path(self, backup_path):
+        backup_path = backup_path.replace('{dbms_name}', self.dbms)
+        backup_path = backup_path.replace('{db_name}', self.name)
+        backup_path = backup_path.replace('{date_time}', datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
+        return os.path.join(self.backup_root, backup_path)
 
     def backup(self):
         log.info('backup database [%s] ----------------------------------------' % self.name)
+
+        # db_path = os.path.dirname(self.backup_path)
+        # if not os.path.exists(db_path):
+        #     os.makedirs(db_path)
+        # structure_sql = os.path.join(db_path, '__structure__.sql')
+
+        # pg_dump --schema-only dbname > /var/lib/postgresql/sql/dbname.sql
+
         for table in self.tables_need_process():
             table.backup()
 

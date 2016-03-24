@@ -10,6 +10,5 @@ dbms_1:
 
   database_1:
     __db__:
-#      schema: public
       ignore: 'session user_*'
     user: select * from "user" where active = true;
