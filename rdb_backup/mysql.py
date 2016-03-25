@@ -20,7 +20,6 @@ class PostgresTable(TableProcessor):
     processor_name = 'mysql'
 
     def backup(self):
-        print(self.backup_path)
         pass
 
     def restore(self):

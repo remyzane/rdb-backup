@@ -65,12 +65,12 @@ def get_config(file_path, prefix=None):
 
     # communal config
     communal_config = config.pop('communal')
-    init_processor(communal_config.pop('include', []))
+    init_processor(communal_config.get('include', []))
 
     # logging config
     log_config = config.pop('logging', None)
     if log_config:
-        set_logging(log_config, os.getcwd())
+        set_logging(log_config, communal_config['backup_root'])
 
     # dbms config
     databases = []
@@ -88,7 +88,7 @@ def get_config(file_path, prefix=None):
             db_config.update(copy.deepcopy(dbms_config))
             database = processor_class(dbms_name, db_name, db_config, tbs)
             databases.append(database)
-    return databases
+    return communal_config, databases
 
 
 def __run_shell_as_file(command, su_user):
@@ -99,7 +99,7 @@ def __run_shell_as_file(command, su_user):
     return False
 
 
-def run_shell(command, user=None, cwd='/tmp'):
+def run_shell(command, user=None, cwd=os.getcwd(), wait=True):
     quotation_marks = '"' if "'" in command else "'"
     su_prefix = 'su %s -c %s' % (user, quotation_marks) if user else ''
     su_postfix = quotation_marks if user else ''
@@ -111,11 +111,16 @@ def run_shell(command, user=None, cwd='/tmp'):
         os.system('chmod og+rx ' + file_path)
         log.debug('run shell: %s%s%s %s %s', su_prefix, file_path, su_postfix, os.linesep, command)
         process = subprocess.Popen(su_prefix + file_path + su_postfix, shell=True, stdout=subprocess.PIPE, cwd=cwd)
-        time.sleep(0.1)
+        if wait:
+            process.wait()
+        else:
+            time.sleep(0.1)
         os.unlink(file_path)
     else:
         log.debug('run shell: %s%s%s', su_prefix, command, su_postfix)
         process = subprocess.Popen(su_prefix + command + su_postfix, shell=True, stdout=subprocess.PIPE, cwd=cwd)
+        if wait:
+            process.wait()
     return process
 
 
