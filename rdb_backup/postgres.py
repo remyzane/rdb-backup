@@ -8,8 +8,8 @@ PG_TABLES_SQL = "SELECT table_name FROM information_schema.tables WHERE table_sc
 
 
 def run_psql(db, sql, cwd='/tmp'):
-    content = 'psql %s -c "%s"' % (db, sql)
-    return run_shell('postgres', content, cwd)
+    command = 'psql %s -c "%s"' % (db, sql)
+    return run_shell(command, 'postgres', cwd)
 
 
 class PostgresLocal(DatabaseProcessor):
@@ -27,8 +27,8 @@ class PostgresLocal(DatabaseProcessor):
 
     def backup_schema(self, schema_path):
         tmp_path = '/tmp/__%s__schema__.sql' % self.name
-        run_shell('postgres', 'pg_dump --schema-only %s > %s' % (self.name, tmp_path))
-        run_shell('root', 'mv %s %s' % (tmp_path, schema_path))
+        run_shell('pg_dump --schema-only %s > %s' % (self.name, tmp_path), 'postgres')
+        run_shell('mv %s %s' % (tmp_path, schema_path))
 
 
 class PostgresTable(TableProcessor):

@@ -11,6 +11,9 @@ from importlib import import_module
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 
 POSIX = os.name != 'nt'
+TMP_SHELL_FILE_PREFIX = '/tmp/__rdb_backup_'
+
+log = logging.getLogger(__name__)
 template_path = os.path.realpath(os.path.join(__file__, '..', 'template.yml'))
 tests_config = os.path.realpath(os.path.join(__file__, '..', '..', 'tests', 'config_files'))
 
@@ -88,15 +91,31 @@ def get_config(file_path, prefix=None):
     return databases
 
 
-def run_shell(user, content, cwd='/tmp'):
-    file_path = '/tmp/' + ''.join(random.sample(string.ascii_letters, 20))
-    content = '#! /bin/sh%s%s' % (os.linesep, content)
-    with open(file_path, 'w') as file:
-        file.write(content)
-    os.system('chmod og+rx ' + file_path)
-    process = subprocess.Popen('su %s -c %s' % (user, file_path), shell=True, stdout=subprocess.PIPE, cwd=cwd)
-    time.sleep(1)
-    os.unlink(file_path)
+def __run_shell_as_file(command, su_user):
+    if os.linesep in command:
+        return True
+    if su_user and '"' in command and "'" in command:
+        return True
+    return False
+
+
+def run_shell(command, user=None, cwd='/tmp'):
+    quotation_marks = '"' if "'" in command else "'"
+    su_prefix = 'su %s -c %s' % (user, quotation_marks) if user else ''
+    su_postfix = quotation_marks if user else ''
+    if __run_shell_as_file(command, user):
+        file_path = TMP_SHELL_FILE_PREFIX + ''.join(random.sample(string.ascii_letters, 20))
+        content = '#! /bin/sh%s%s' % (os.linesep, command)
+        with open(file_path, 'w') as file:
+            file.write(content)
+        os.system('chmod og+rx ' + file_path)
+        log.debug('run shell: %s%s%s %s %s', su_prefix, file_path, su_postfix, os.linesep, command)
+        process = subprocess.Popen(su_prefix + file_path + su_postfix, shell=True, stdout=subprocess.PIPE, cwd=cwd)
+        time.sleep(0.1)
+        os.unlink(file_path)
+    else:
+        log.debug('run shell: %s%s%s', su_prefix, command, su_postfix)
+        process = subprocess.Popen(su_prefix + command + su_postfix, shell=True, stdout=subprocess.PIPE, cwd=cwd)
     return process
 
 

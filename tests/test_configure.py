@@ -4,6 +4,7 @@ from rdb_backup.utility import get_config, template_path, tests_config, Processo
 
 
 def test_template():
+    print('----')
     dbs = get_config(template_path)
     for db in dbs:
         if db.name == 'database_1':

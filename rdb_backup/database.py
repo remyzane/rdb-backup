@@ -54,7 +54,7 @@ class DatabaseProcessor(object):
         return os.path.join(self.backup_root, backup_path)
 
     def backup(self):
-        log.info('backup database [%s] ----------------------------------------' % self.name)
+        log.info('------------------------ backup %s ----------------------->' % self.name)
         db_path = self.backup_path.split('{table_name}')[0]
         if not os.path.exists(db_path):
             os.makedirs(db_path)
@@ -63,7 +63,7 @@ class DatabaseProcessor(object):
 
         for table in self.tables_need_process():
             table.backup()
-        log.info('------------------------------ database [%s] backup completed' % self.name)
+        log.info('------------------ %s backup completed -------------------<' % self.name)
 
     def restore(self):
         for table in self.tables_need_process():
