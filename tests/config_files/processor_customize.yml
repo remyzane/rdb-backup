@@ -2,7 +2,7 @@
 communal:
 
   backup_root: /backup-root
-  backup_path: '{dbms_name}/{db_name}/{table_name}/{date_time}'
+  backup_path: '{dbms_name}/{db_name}/{table_name}/{date_time}.sql'
 
   include:
     - tests.my_processor

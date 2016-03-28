@@ -14,6 +14,7 @@ POSIX = os.name != 'nt'
 TMP_SHELL_FILE_PREFIX = '/tmp/__rdb_backup_'
 
 log = logging.getLogger(__name__)
+log_configured = False
 template_path = os.path.realpath(os.path.join(__file__, '..', 'template.yml'))
 tests_config = os.path.realpath(os.path.join(__file__, '..', '..', 'tests', 'config_files'))
 
@@ -61,6 +62,7 @@ def get_config(file_path, prefix=None):
     :param prefix: configure file path prefix
     """
     from rdb_backup.database import database_processors
+    global log_configured
     config = load_yml(file_path, prefix)
 
     # communal config
@@ -69,8 +71,12 @@ def get_config(file_path, prefix=None):
 
     # logging config
     log_config = config.pop('logging', None)
-    if log_config:
-        set_logging(log_config, communal_config['backup_root'])
+    if not log_configured:
+        if not log_config and 'py.test' in sys.argv[0]:
+            log_config = load_yml(template_path).get('logging')
+        if log_config:
+            log_configured = True
+            set_logging(log_config, communal_config['backup_root'])
 
     # dbms config
     databases = []

@@ -2,7 +2,7 @@
 communal:
 
   backup_root: /backup-root
-  backup_path: '{db_name}/{table_name}'
+  backup_path: '{db_name}/{table_name}.sql'
 
 
 dbms0:

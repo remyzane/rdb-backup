@@ -2,8 +2,8 @@
 communal:
 
   backup_root: /backup-root
-  backup_path: '{db_name}/{table_name}'   # {dbms_name}  {date_time}
-  #chmod: u+rX,u-w,og-rwx                  # default u+rX,u-w,og-rwx
+  backup_path: '{db_name}/{table_name}.sql'   # {dbms_name}  {date_time}
+  #chmod: u+rX,u-w,og-rwx                      # default u+rX,u-w,og-rwx
 
   #include:   # you customization database and table processor
   #  - python_path.python_module

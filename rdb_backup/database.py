@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 
 from rdb_backup.table import table_processors
-from rdb_backup.utility import ProcessorNonexistent, run_shell
+from rdb_backup.utility import ProcessorNonexistent
 
 log = logging.getLogger(__name__)
 
@@ -19,6 +19,12 @@ class DatabaseProcessor(object):
         self.backup_path = self.__get_path(db_config.pop('backup_path'))
         self.ignore_list = db_config.pop('ignore', '').split()
         self.define = {}    # table define
+
+        db_path = self.backup_path.split('{table_name}')[0]
+        if not os.path.exists(db_path):
+            os.makedirs(db_path)
+        self.schema_sql = os.path.join(db_path, '__schema__.sql')
+
         for tb_name, define in tb_config.items():
             table_processor = self.processor_name
             selector = None
@@ -55,31 +61,26 @@ class DatabaseProcessor(object):
 
     def backup(self):
         log.info('------------------------ backup %s ----------------------->' % self.name)
-        db_path = self.backup_path.split('{table_name}')[0]
-        if not os.path.exists(db_path):
-            os.makedirs(db_path)
-        schema_sql_path = os.path.join(db_path, '__structure__.sql')
-        self.backup_schema(schema_sql_path)
-
-        for table in self.tables_need_process():
-            table.backup()
+        self.backup_schema_and_tables(self.tables_need_process())
+        # for table in :
+        #     table.backup()
         log.info('------------------ %s backup completed -------------------<' % self.name)
 
     def restore(self):
-        for table in self.tables_need_process():
+        for table in self.tables_need_process().values():
             table.restore()
 
     def tables_need_process(self):
-        tables = []
+        tables = {}
         tables_ignored = []
         for table_name in self.tables_all():
             if self.__ignored(table_name):
                 tables_ignored.append(table_name)
             else:
                 if table_name in self.define:
-                    tables.append(self.define[table_name])
+                    tables[table_name] = self.define[table_name]
                 else:
-                    tables.append(table_processors[self.processor_name](self, table_name, {}))
+                    tables[table_name] = table_processors[self.processor_name](self, table_name, {})
         if tables_ignored:
             log.info('ignored tables: %s' % tables_ignored)
         return tables
@@ -89,7 +90,7 @@ class DatabaseProcessor(object):
         raise NotImplementedError
 
     # implement in subclass
-    def backup_schema(self, schema_path):
+    def backup_schema_and_tables(self, need_backup_tables):
         raise NotImplementedError
 
 # generate in rdb_backup.utility.init_processor
