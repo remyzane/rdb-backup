@@ -7,7 +7,10 @@ communal:
 
 dbms_1:
   __dbms__:
-    processor: postgres
+    processor: mysql
+    username: backup
+    password: pukcab
+
 
   database_1:
     __db__:

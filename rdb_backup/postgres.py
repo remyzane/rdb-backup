@@ -24,7 +24,7 @@ class PostgresLocal(DatabaseProcessor):
         command = 'psql %s -c "%s"' % (db, sql)
         return run_shell(command, 'postgres', cwd=cls.tmp_dir)
 
-    def tables_all(self):
+    def table_names(self):
         process = self.run_psql(self.name, QUERY_TABLES_SQL)
         out = process.stdout.readlines()
         out = out[2:-2]
@@ -33,7 +33,7 @@ class PostgresLocal(DatabaseProcessor):
             tables.append(item.strip().decode('utf8'))
         return tables
 
-    def backup_schema_and_tables(self, need_backup_tables):
+    def dump_data(self, need_backup_tables):
         complete_sql = os.path.join(self.tmp_dir, '__%s__complete__.sql' % self.name)
         log.info('dumping ...')
         run_shell('pg_dump %s > %s' % (self.name, complete_sql), 'postgres', cwd=self.tmp_dir)
@@ -43,24 +43,29 @@ class PostgresLocal(DatabaseProcessor):
         for line in open(complete_sql):
             if sign == 0:
                 if line.startswith('-- Data for Name: '):
-                    sign = 1
-                    table_name = line.split(';')[0].split()[-1]
-                    if table_name in need_backup_tables:
-                        table_sql_path = need_backup_tables[table_name].backup_path
-                        log.info('backup ' + table_sql_path)
-                        table_sql = open(table_sql_path, 'w')
+                    sign += 1
                 schema_sql.write(line)
                 continue
-            if sign == 1:       # write '--' line
-                sign = 2
+            if sign in [1, 2]:      # '--' and space line
+                sign += 1
                 schema_sql.write(line)
                 continue
-            if sign == 2:
-                if table_sql:
-                    table_sql.write(line)
+            if sign == 3:           # field names
+                sign += 1
+                table_name = line.split()[1]
+                if table_name in need_backup_tables:
+                    table_sql = need_backup_tables[table_name]
+                    table_sql.write_field_names(line)
+                continue
+            if sign == 4:
                 if line == '\.' + os.linesep:
                     sign = 0
-                    table_sql = None
+                    if table_sql:
+                        table_sql.write_other(line)
+                        table_sql = None
+                else:
+                    if table_sql:
+                        table_sql.write_record(line)
                 continue
 
         log.info('backup ' + self.schema_sql)
@@ -70,6 +75,21 @@ class PostgresLocal(DatabaseProcessor):
 class PostgresTable(TableProcessor):
 
     processor_name = 'postgres'
+
+    def add_record(self, _file, line):
+        table_sql.write(line)
+
+
+    def write_header(self, line):
+        log.info('backup ' + self.backup_path)
+        table_sql = open(self.backup_path, 'w')
+        table_sql.write(line)
+
+    def write_record(self, record):
+
+
+    def write_other(self, line):
+
 
     def backup(self):
 

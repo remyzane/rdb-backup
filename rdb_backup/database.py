@@ -27,12 +27,12 @@ class DatabaseProcessor(object):
 
         for tb_name, define in tb_config.items():
             table_processor = self.processor_name
-            selector = None
+            # selector = None
             params = None
-            if type(define) == str:
-                selector = define
-            elif type(define) == dict:
-                selector = define.pop('selector', None)
+            # if type(define) == str:
+            #     selector = define
+            if type(define) == dict:
+                # selector = define.pop('selector', None)
                 table_processor = define.pop('processor', self.processor_name)
                 params = define
 
@@ -40,7 +40,7 @@ class DatabaseProcessor(object):
             if not processor_class:
                 raise ProcessorNonexistent('table processor [%s] nonexistent.' % table_processor)
 
-            self.define[tb_name] = processor_class(self, tb_name, params, selector)
+            self.define[tb_name] = processor_class(self, tb_name, params)   # , selector)
 
     def __ignored(self, name):
         for item in self.ignore_list:
@@ -61,9 +61,7 @@ class DatabaseProcessor(object):
 
     def backup(self):
         log.info('------------------------ backup %s ----------------------->' % self.name)
-        self.backup_schema_and_tables(self.tables_need_process())
-        # for table in :
-        #     table.backup()
+        self.dump_data(self.tables_need_process())
         log.info('------------------ %s backup completed -------------------<' % self.name)
 
     def restore(self):
@@ -73,7 +71,7 @@ class DatabaseProcessor(object):
     def tables_need_process(self):
         tables = {}
         tables_ignored = []
-        for table_name in self.tables_all():
+        for table_name in self.table_names():
             if self.__ignored(table_name):
                 tables_ignored.append(table_name)
             else:
@@ -86,11 +84,11 @@ class DatabaseProcessor(object):
         return tables
 
     # implement in subclass
-    def tables_all(self):
+    def table_names(self):
         raise NotImplementedError
 
     # implement in subclass
-    def backup_schema_and_tables(self, need_backup_tables):
+    def dump_data(self, need_backup_tables):
         raise NotImplementedError
 
 # generate in rdb_backup.utility.init_processor

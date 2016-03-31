@@ -16,7 +16,6 @@ dbms_1:
   database_1:
     __db__:
       ignore: 'table3 log_yyyymmdd log_*'
-    table_1: select * from table_1 where create_time > yyyymmdd
 
 
 dbms2:
@@ -27,7 +26,6 @@ dbms2:
 
   database_2:
     table_2:
-      selector: select * from table_2 where create_time > yyyymmdd
 #      processor: customization_processor  # default (not need define)  |  processor_defined_youself
 #      customization_param1: xxx
 #      customization_param2: xxx
