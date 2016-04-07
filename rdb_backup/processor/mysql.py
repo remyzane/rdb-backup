@@ -1,5 +1,4 @@
-from rdb_backup.table import TableProcessor
-from rdb_backup.database import DatabaseProcessor
+from rdb_backup.processor import TableProcessor, DatabaseProcessor
 
 
 class MysqlLocal(DatabaseProcessor):

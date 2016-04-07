@@ -2,8 +2,7 @@ import os
 import logging
 
 from rdb_backup.utility import run_shell
-from rdb_backup.table import TableProcessor
-from rdb_backup.database import DatabaseProcessor
+from rdb_backup.processor import DatabaseProcessor, TableProcessor
 
 QUERY_TABLES_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';"
 log = logging.getLogger(__name__)
@@ -91,7 +90,6 @@ class PostgresTable(TableProcessor):
             field_name, operator, filter_value = self.filter
             record = line[:-len(os.linesep)].split('\t')
             field_value = self.get_field(record, field_name)
-            print(field_value)
             if operator == '>':
                 if field_value > filter_value:
                     need_write = True
@@ -102,7 +100,6 @@ class PostgresTable(TableProcessor):
                 if field_value < filter_value:
                     need_write = True
             if need_write:
-                print('---', line[:19])
                 self.file.write(line)
 
     def write_other(self, line):

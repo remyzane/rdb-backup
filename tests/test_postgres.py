@@ -24,6 +24,3 @@ def _backup():
             os.system("chmod og-rwx %s/%s.sql" % (savepath, database))
         else:
             os.system("rm %s/%s.tmp" % (savepath, database))
-
-
-

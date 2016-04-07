@@ -35,11 +35,10 @@ def load_yml(file_path, prefix=None):
 
 
 def init_processor(processor_paths):
-    from rdb_backup.table import table_processors, TableProcessor
-    from rdb_backup.database import database_processors, DatabaseProcessor
+    from rdb_backup.processor import table_processors, database_processors, TableProcessor, DatabaseProcessor
 
-    import_module('rdb_backup.mysql')
-    import_module('rdb_backup.postgres')
+    import_module('rdb_backup.processor.mysql')
+    import_module('rdb_backup.processor.postgres')
     processor_paths = processor_paths + []
     for processor_path in processor_paths:
         import_module(processor_path)
@@ -61,7 +60,7 @@ def get_config(file_path, prefix=None):
     :param file_path: configure file path
     :param prefix: configure file path prefix
     """
-    from rdb_backup.database import database_processors
+    from rdb_backup.processor import database_processors
     global log_configured
     config = load_yml(file_path, prefix)
 
