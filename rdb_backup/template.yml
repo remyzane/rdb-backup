@@ -25,6 +25,8 @@ dbms2:
     password: xxxx
 
   database_2:
+    table_1:
+      filter: id > 1000
     table_2:
 #      processor: customization_processor  # default (not need define)  |  processor_defined_youself
 #      customization_param1: xxx

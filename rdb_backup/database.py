@@ -27,12 +27,8 @@ class DatabaseProcessor(object):
 
         for tb_name, define in tb_config.items():
             table_processor = self.processor_name
-            # selector = None
             params = None
-            # if type(define) == str:
-            #     selector = define
             if type(define) == dict:
-                # selector = define.pop('selector', None)
                 table_processor = define.pop('processor', self.processor_name)
                 params = define
 
@@ -40,7 +36,7 @@ class DatabaseProcessor(object):
             if not processor_class:
                 raise ProcessorNonexistent('table processor [%s] nonexistent.' % table_processor)
 
-            self.define[tb_name] = processor_class(self, tb_name, params)   # , selector)
+            self.define[tb_name] = processor_class(self, tb_name, params)
 
     def __ignored(self, name):
         for item in self.ignore_list:
@@ -71,7 +67,12 @@ class DatabaseProcessor(object):
     def tables_need_process(self):
         tables = {}
         tables_ignored = []
-        for table_name in self.table_names():
+        table_names = self.table_names()
+        for table_name in self.define.keys():
+            if table_name not in table_names:
+                raise IndexError('defined table [%s] is not exists in database [%s]' % (table_name, self.name))
+
+        for table_name in table_names:
             if self.__ignored(table_name):
                 tables_ignored.append(table_name)
             else:

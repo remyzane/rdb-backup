@@ -55,13 +55,14 @@ class PostgresLocal(DatabaseProcessor):
                 table_name = line.split()[1]
                 if table_name in need_backup_tables:
                     table_sql = need_backup_tables[table_name]
-                    table_sql.write_field_names(line)
+                    table_sql.write_header(line)
                 continue
             if sign == 4:
                 if line == '\.' + os.linesep:
                     sign = 0
                     if table_sql:
                         table_sql.write_other(line)
+                        table_sql.file.close()
                         table_sql = None
                 else:
                     if table_sql:
@@ -76,29 +77,36 @@ class PostgresTable(TableProcessor):
 
     processor_name = 'postgres'
 
-    def add_record(self, _file, line):
-        table_sql.write(line)
-
-
     def write_header(self, line):
         log.info('backup ' + self.backup_path)
-        table_sql = open(self.backup_path, 'w')
-        table_sql.write(line)
+        self.file = open(self.backup_path, 'w')
+        self.set_field_names(line.split('(')[1].split(')')[0].split(', '))
+        self.file.write(line)
 
-    def write_record(self, record):
-
+    def write_record(self, line):
+        if self.filter is None:
+            self.file.write(line)
+        else:
+            need_write = False
+            field_name, operator, filter_value = self.filter
+            record = line[:-len(os.linesep)].split('\t')
+            field_value = self.get_field(record, field_name)
+            print(field_value)
+            if operator == '>':
+                if field_value > filter_value:
+                    need_write = True
+            if operator == '=':
+                if field_value == filter_value:
+                    need_write = True
+            if operator == '<':
+                if field_value < filter_value:
+                    need_write = True
+            if need_write:
+                print('---', line[:19])
+                self.file.write(line)
 
     def write_other(self, line):
-
-
-    def backup(self):
-
-        # run_shell('pg_dump -t %s %s > %s' % (self.name, self.db.name, tmp_path), 'postgres', cwd=self.db.tmp_dir)
-        # run_shell('mv %s %s' % (tmp_path, self.backup_path))
-        # run_shell('chown root:root %s' % self.backup_path)
-
-        print(self.backup_path)
-        pass
+        self.file.write(line)
 
     def restore(self):
         pass

@@ -12,6 +12,7 @@ class MysqlLocal(DatabaseProcessor):
         self.username = db_config.pop('username')
 
     def backup(self):
+        # mysqldump -u root -p database_name --lock-all-tables --extended-insert=false > backup.sql
         pass
 
 

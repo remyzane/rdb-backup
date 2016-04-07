@@ -24,8 +24,8 @@ class MyTableProcessor(TableProcessor):
 
     processor_name = 'my_processor'
 
-    def __init__(self, db, tb_name, define=None):    # , selector=None):
-        super().__init__(db, tb_name, define)   # , selector)
+    def __init__(self, db, tb_name, define=None):
+        super().__init__(db, tb_name, define)
         self.customization_param1 = define.pop('customization_param1', None)
         self.customization_param2 = define.pop('customization_param2', None)
 

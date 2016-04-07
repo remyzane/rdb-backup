@@ -12,6 +12,8 @@ dbms_1:
   database_1:
     __db__:
       ignore: 'session user_*'
+    price:
+      filter: id > 290
 
   database_2:
     __db__:

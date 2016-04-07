@@ -4,30 +4,35 @@ class TableProcessor(object):
 
     processor_name = None
 
-    def __init__(self, db, name, define=None):  # , selector=None):
+    def __init__(self, db, name, define=None):
         self.db = db
         self.name = name
-        self.define = define
-        # self.selector = selector
+        self.define = define or dict()
         self.backup_path = db.backup_path.replace('{table_name}', name)
         self.field_names = None
-
-    @staticmethod
-    def transform_data(value, date_type):
-        return date_type(value)
+        self.file = None
+        self.filter = define.get('filter', None)
+        if self.filter:
+            if not ('>' in self.filter or '>' in self.filter or '=' in self.filter):
+                raise SyntaxError('unknown filter syntax [%s] in %s.%s, filter only support [>, <, =]' %
+                                  (self.filter, self.db.name, self.name))
+            self.filter = self.filter.split(maxsplit=2)
 
     def set_field_names(self, names):
         self.field_names = names
 
-    def get_field(self, record, field_name, data_type):
-        value = record[self.field_names.index(field_name)]
-        return self.transform_data(value, data_type)
+    def add_field_name(self, name):
+        self.field_names.append(name)
 
-    def backup(self):
-        raise NotImplementedError
+    def get_field(self, record, field_name):
+        try:
+            return record[self.field_names.index(field_name)]
+        except ValueError:
+            raise IndexError('defined field name [%s] not exists in table [%s.%s]' % (field_name, self.db.name, self.name))
 
-    def restore(self):
-        raise NotImplementedError
+    #
+    # def restore(self):
+    #     raise NotImplementedError
 
 
 class CompressProcessor(TableProcessor):
