@@ -56,6 +56,6 @@ def test_backup_path():
     assert db.backup_path.startswith('/backup-root/dbms0/database_1/{table_name}/')
     assert db.backup_path[-7] == db.backup_path[-10] == ':'
 
-    table1 = db.tables_need_process().get('table_1')
+    table1 = db.tables_need_backup().get('table_1')
     assert table1.backup_path.startswith('/backup-root/dbms0/database_1/table_1/')
     assert table1.backup_path[-7] == table1.backup_path[-10] == ':'

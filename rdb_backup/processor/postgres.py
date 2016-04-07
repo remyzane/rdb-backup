@@ -32,7 +32,7 @@ class PostgresLocal(DatabaseProcessor):
             tables.append(item.strip().decode('utf8'))
         return tables
 
-    def dump_data(self, need_backup_tables):
+    def backup(self, need_backup_tables):
         complete_sql = os.path.join(self.tmp_dir, '__%s__complete__.sql' % self.name)
         log.info('dumping ...')
         run_shell('pg_dump %s > %s' % (self.name, complete_sql), 'postgres', cwd=self.tmp_dir)
@@ -70,6 +70,9 @@ class PostgresLocal(DatabaseProcessor):
 
         log.info('backup ' + self.schema_sql)
         os.unlink(complete_sql)
+
+    def restore(self):
+        pass
 
 
 class PostgresTable(TableProcessor):

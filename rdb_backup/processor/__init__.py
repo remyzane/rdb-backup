@@ -54,16 +54,7 @@ class DatabaseProcessor(object):
         backup_path = backup_path.replace('{date_time}', datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
         return os.path.join(self.backup_root, backup_path)
 
-    def backup(self):
-        log.info('------------------------ backup %s ----------------------->' % self.name)
-        self.dump_data(self.tables_need_process())
-        log.info('------------------ %s backup completed -------------------<' % self.name)
-
-    def restore(self):
-        for table in self.tables_need_process().values():
-            table.restore()
-
-    def tables_need_process(self):
+    def tables_need_backup(self):
         tables = {}
         tables_ignored = []
         table_names = self.table_names()
@@ -83,12 +74,15 @@ class DatabaseProcessor(object):
             log.info('ignored tables: %s' % tables_ignored)
         return tables
 
-    # implement in subclass
+    # implement in subclass ---------------------------------
+
     def table_names(self):
         raise NotImplementedError
 
-    # implement in subclass
-    def dump_data(self, need_backup_tables):
+    def backup(self, need_backup_tables):
+        raise NotImplementedError
+
+    def restore(self):
         raise NotImplementedError
 
 
