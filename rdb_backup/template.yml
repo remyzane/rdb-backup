@@ -14,8 +14,8 @@ dbms_1:
     processor: postgres   # mysql  |  postgres  |  processor_defined_youself
 
   database_1:
-    __db__:
-      ignore: 'table3 log_yyyymmdd log_*'
+#    __db__:
+#      ignore: 'table3 log_yyyymmdd log_*'
 
 
 dbms2:
@@ -27,9 +27,9 @@ dbms2:
   database_2:
 #    __db__:
 #      extended-insert: true
-    table_1:
-      filter: id > 1000
-    table_2:
+#    table_1:
+#      filter: id > 1000
+#    table_2:
 #      processor: customization_processor  # default (not need define)  |  processor_defined_youself
 #      customization_param1: xxx
 #      customization_param2: xxx
