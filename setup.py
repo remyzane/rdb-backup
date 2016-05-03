@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def read(*paths):
@@ -19,7 +19,7 @@ setup(
     author="Remy Zane",
     author_email="remyzane@icloud.com",
     url="https://github.com/remyzane/rdb-backup",
-    packages=['rdb_backup'],
+    packages=find_packages(),
     package_data={'rdb_backup': ['*.yml'] },
     test_suite="tests",
     install_requires=[
