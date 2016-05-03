@@ -49,17 +49,18 @@ class MysqlLocal(DatabaseProcessor):
                 if line.startswith('CREATE TABLE `'):
                     sign = 1
                     table_name = line[14:].split('`', 1)[0]
+                    insert_str = 'INSERT INTO `%s` VALUES (' % table_name
+                    insert_str_length = len(insert_str)
                     if table_name in need_backup_tables:
                         table_sql = need_backup_tables[table_name]
-                        insert_str = 'INSERT INTO `%s` VALUES (' % table_name
-                        insert_str_length = len(insert_str)
                 schema_sql.write(line)
             elif sign == 1:
                 if line.startswith('  `'):
                     fields.append(line[3:].split('`', 1)[0])
                 else:
                     sign = 2
-                    table_sql.begin_backup(fields)
+                    if table_sql:
+                        table_sql.begin_backup(fields)
                 schema_sql.write(line)
             elif sign == 2:
                 if line.startswith('DROP TABLE IF EXISTS '):
@@ -70,13 +71,16 @@ class MysqlLocal(DatabaseProcessor):
                     insert_str = None
                     insert_str_length = None
                     fields = []
-                if table_sql and line.startswith(insert_str):
-                    table_sql.write_record(line[insert_str_length:-3])
+                    schema_sql.write(line)
+                elif line.startswith(insert_str):
+                    if table_sql:
+                        table_sql.write_record(line[insert_str_length:-3])
                 else:
                     schema_sql.write(line)
 
         log.info('backup ' + self.schema_sql)
-        os.unlink(self.dump_sql)
+        if not self.debug:
+            os.unlink(self.dump_sql)
 
     def restore(self):
         tables_ignored = []
@@ -134,22 +138,66 @@ class MysqlTable(TableProcessor):
         self.set_field_names(fields)
         self.file = open(self.backup_path, 'w')
 
+    @classmethod
+    def get_record(cls, data):
+        field = None
+        in_mark = False
+        in_wildcard = False
+        fields = []
+        for _char in data:
+            if field is None:
+                if _char == '\'':
+                    in_mark = True
+                    field = ''
+                else:
+                    in_mark = False
+                    field = _char
+            else:
+                if in_mark:
+                    if in_wildcard:
+                        in_wildcard = False
+                    else:
+                        if _char == '\\':
+                            in_wildcard = True
+                        elif _char == '\'':
+                            in_mark = False
+                        else:
+                            field += _char
+                else:
+                    if _char == ',':
+                        fields.append(field)
+                        field = None
+                        in_mark = False
+                    else:
+                        field += _char
+        fields.append(field)
+        return fields
+
     def write_record(self, line):
         if self.filter is None:
             self.file.write(line + os.linesep)
         else:
             need_write = False
             field_name, operator, filter_value = self.filter
-            record = line[:-len(os.linesep)].split('\t')
+            record = self.get_record(line[:-len(os.linesep)])
             field_value = self.get_field(record, field_name)
             if operator == '>':
                 if field_value > filter_value:
                     need_write = True
             if operator == '=':
-                if field_value == filter_value:
+                if filter_value == 'None':
+                    if field_value == 'NULL':
+                        need_write = True
+                elif field_value == filter_value:
+                    need_write = True
+            if operator == '!=':
+                if filter_value == 'None':
+                    if field_value != 'NULL':
+                        need_write = True
+                elif field_value != filter_value:
                     need_write = True
             if operator == '<':
-                if field_value < filter_value:
+                if field_value < filter_value or field_value == 'NULL':      # or field_value is None
                     need_write = True
             if need_write:
-                self.file.write(line)
+                self.file.write(line + os.linesep)

@@ -18,6 +18,7 @@ class DatabaseProcessor(object):
         self.backup_path = self.__get_path(db_config.pop('backup_path'))
         self.ignore_list = db_config.pop('ignore', '').split()
         self.define = {}    # table define
+        self.debug = db_config.get('debug', False)
 
         db_path = self.backup_path.split('{table_name}')[0]
         if not os.path.exists(db_path):

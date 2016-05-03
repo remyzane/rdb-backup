@@ -67,7 +67,8 @@ class PostgresLocal(DatabaseProcessor):
                         table_sql.write_record(line)
 
         log.info('backup ' + self.schema_sql)
-        os.unlink(self.dump_sql)
+        if not self.debug:
+            os.unlink(self.dump_sql)
 
     def restore(self):
         tables_ignored = []
@@ -123,10 +124,19 @@ class PostgresTable(TableProcessor):
                 if field_value > filter_value:
                     need_write = True
             if operator == '=':
-                if field_value == filter_value:
+                if filter_value == 'None':
+                    if field_value == '\\N':
+                        need_write = True
+                elif field_value == filter_value:
+                    need_write = True
+            if operator == '!=':
+                if filter_value == 'None':
+                    if field_value != '\\N':
+                        need_write = True
+                elif field_value != filter_value:
                     need_write = True
             if operator == '<':
-                if field_value < filter_value:
+                if field_value < filter_value or field_value == '\\N':      # or field_value is None
                     need_write = True
             if need_write:
                 self.file.write(line)

@@ -1,6 +1,6 @@
 
 communal:
-
+  debug: true
   backup_root: /tmp/_rdb_mysql_test_
   backup_path: '{db_name}/{table_name}.sql'
 
@@ -14,7 +14,13 @@ dbms_1:
 
   database_1:
     __db__:
-      ignore: 'session user_*'
+      extended-insert: false
+      ignore: 'table_2'
+
+    table_1:
+      filter: posttime > 1406642338
+    pmw_infoimg:
+      filter: memberGrade != None
 #
 #  database_2:
 #    __db__:

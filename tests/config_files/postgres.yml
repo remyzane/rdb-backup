@@ -1,6 +1,6 @@
 
 communal:
-
+  debug: true
   backup_root: /tmp/_rdb_postgre_test_
   backup_path: '{db_name}/{table_name}.sql'
 
@@ -14,6 +14,8 @@ dbms_1:
       ignore: 'session user_*'
     price:
       filter: id > 290
+    menu:
+      filter: supitem_id != None
 
   database_2:
     __db__:
