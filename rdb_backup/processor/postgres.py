@@ -12,9 +12,9 @@ class PostgresLocal(DatabaseProcessor):
 
     processor_name = 'postgres'
 
-    tmp_dir = '/tmp/rdb_backup_postgres_local'
+    tmp_dir = '/tmp/rdb_backup/postgres_local'
     if not os.path.exists(tmp_dir):
-        os.mkdir(tmp_dir)
+        run_shell('mkdir -p %s' % tmp_dir)
     run_shell('chown postgres:postgres %s' % tmp_dir)
     run_shell('chmod og-rwx %s' % tmp_dir)
 
@@ -46,19 +46,16 @@ class PostgresLocal(DatabaseProcessor):
                 if line.startswith('-- Data for Name: '):
                     sign += 1
                 schema_sql.write(line)
-                continue
-            if sign in [1, 2]:      # '--' and space line
+            elif sign in [1, 2]:      # '--' and space line
                 sign += 1
                 schema_sql.write(line)
-                continue
-            if sign == 3:           # field names
+            elif sign == 3:           # field names
                 sign += 1
                 table_name = line.split()[1].replace('"', '')
                 if table_name in need_backup_tables:
                     table_sql = need_backup_tables[table_name]
                     table_sql.write_header(line)
-                continue
-            if sign == 4:
+            elif sign == 4:
                 if line == '\.' + os.linesep:
                     sign = 0
                     if table_sql:
@@ -68,7 +65,6 @@ class PostgresLocal(DatabaseProcessor):
                 else:
                     if table_sql:
                         table_sql.write_record(line)
-                continue
 
         log.info('backup ' + self.schema_sql)
         os.unlink(self.dump_sql)
@@ -137,6 +133,3 @@ class PostgresTable(TableProcessor):
 
     def write_other(self, line):
         self.file.write(line)
-
-    def restore(self):
-        pass
