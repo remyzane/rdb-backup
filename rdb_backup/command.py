@@ -46,7 +46,7 @@ def restore(config_file, database=None):
         log.info('nothing todo')
 
 
-def template(config_file):
+def template(config_file, database=None):
     template_file = os.path.realpath(os.path.join(__file__, '..', 'template.yml'))
     run_shell('cp %s %s' % (template_file, config_file))
     run_shell('chmod og-rwx ' + config_file)
