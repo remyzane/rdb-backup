@@ -37,7 +37,7 @@ class DatabaseProcessor(object):
 
             self.define[tb_name] = processor_class(self, tb_name, params)
 
-    def __ignored(self, name):
+    def ignored(self, name):
         for item in self.ignore_list:
             if item[-1] == '*':
                 if name.startswith(item[:-1]):
@@ -63,7 +63,7 @@ class DatabaseProcessor(object):
                 raise IndexError('defined table [%s] is not exists in database [%s]' % (table_name, self.name))
 
         for table_name in table_names:
-            if self.__ignored(table_name):
+            if self.ignored(table_name):
                 tables_ignored.append(table_name)
             else:
                 if table_name in self.define:

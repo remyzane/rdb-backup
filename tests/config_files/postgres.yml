@@ -49,5 +49,5 @@ logging:
 
   logger:
     default:                    # python module path e.g. email.mime.base
-      level: debug
+      level: info
       handler: default stream   # stream must on the last, otherwise the output will be chaos

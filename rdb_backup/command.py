@@ -21,9 +21,9 @@ def backup(config_file, database=None):
     changed = False
     for db in dbs:
         if database is None or db.name == database:
-            log.info('------------------------ backup %s ----------------------->' % db.name)
+            log.info('------------------------ backup %s -----------------------' % db.name)
             db.backup(db.tables_need_backup())
-            log.info('------------------ %s backup completed -------------------<' % db.name)
+            log.info('%s--------------------------------------------------------' % ('-' * len(db.name)))
             changed = True
     if not changed:
         log.info('nothing todo')
@@ -38,9 +38,9 @@ def restore(config_file, database=None):
     changed = False
     for db in dbs:
         if database is None or db.name == database:
-            log.info('------------------------ restore %s ----------------------->' % db.name)
+            log.info('------------------------ restore %s -----------------------' % db.name)
             db.restore()
-            log.info('------------------ %s restore completed -------------------<' % db.name)
+            log.info('%s---------------------------------------------------------' % ('-' * len(db.name)))
             changed = True
     if not changed:
         log.info('nothing todo')

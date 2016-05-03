@@ -18,6 +18,10 @@ class PostgresLocal(DatabaseProcessor):
     run_shell('chown postgres:postgres %s' % tmp_dir)
     run_shell('chmod og-rwx %s' % tmp_dir)
 
+    def __init__(self, dbms, name, db_config, tb_config):
+        DatabaseProcessor.__init__(self, dbms, name, db_config, tb_config)
+        self.dump_sql = os.path.join(self.tmp_dir, '__%s__complete__.sql' % self.name)
+
     @classmethod
     def run_psql(cls, db, sql):
         command = 'psql %s -c "%s"' % (db, sql)
@@ -33,13 +37,11 @@ class PostgresLocal(DatabaseProcessor):
         return tables
 
     def backup(self, need_backup_tables):
-        complete_sql = os.path.join(self.tmp_dir, '__%s__complete__.sql' % self.name)
-        log.info('dumping ...')
-        run_shell('pg_dump %s > %s' % (self.name, complete_sql), 'postgres', cwd=self.tmp_dir)
+        run_shell('pg_dump %s > %s' % (self.name, self.dump_sql), 'postgres', cwd=self.tmp_dir)
         schema_sql = open(self.schema_sql, 'w')
         sign = 0
         table_sql = None
-        for line in open(complete_sql):
+        for line in open(self.dump_sql):
             if sign == 0:
                 if line.startswith('-- Data for Name: '):
                     sign += 1
@@ -51,7 +53,7 @@ class PostgresLocal(DatabaseProcessor):
                 continue
             if sign == 3:           # field names
                 sign += 1
-                table_name = line.split()[1]
+                table_name = line.split()[1].replace('"', '')
                 if table_name in need_backup_tables:
                     table_sql = need_backup_tables[table_name]
                     table_sql.write_header(line)
@@ -69,10 +71,38 @@ class PostgresLocal(DatabaseProcessor):
                 continue
 
         log.info('backup ' + self.schema_sql)
-        os.unlink(complete_sql)
+        os.unlink(self.dump_sql)
 
     def restore(self):
-        pass
+        tables_ignored = []
+        import_sql = open(self.backup_path.replace('{table_name}', 'import'), 'w')
+        sign = 0
+        table_name = None
+        for line in open(self.schema_sql):
+            if sign == 0:
+                if line.startswith('-- Data for Name: '):
+                    sign += 1
+                    table_name = line[18:].split(';', 1)[0]
+                import_sql.write(line)
+                continue
+            if sign == 1:      # '--'
+                sign += 1
+                import_sql.write(line)
+                continue
+            if sign == 2:      # space line
+                import_sql.write(line)
+                if self.ignored(table_name):
+                    tables_ignored.append(table_name)
+                else:
+                    for data_line in open(self.backup_path.replace('{table_name}', table_name)):
+                        import_sql.write(data_line)
+                sign = 0
+                table_name = None
+                continue
+        if tables_ignored:
+            log.info('ignored tables: %s' % tables_ignored)
+        log.info('generate import file: %s', import_sql.name)
+        import_sql.close()
 
 
 class PostgresTable(TableProcessor):
