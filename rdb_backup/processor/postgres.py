@@ -60,7 +60,7 @@ class PostgresLocal(DatabaseProcessor):
                     sign = 0
                     if table_sql:
                         table_sql.write_other(line)
-                        table_sql.file.close()
+                        table_sql.close()
                         table_sql = None
                 else:
                     if table_sql:
@@ -107,7 +107,6 @@ class PostgresTable(TableProcessor):
     processor_name = 'postgres'
 
     def write_header(self, line):
-        log.info('backup ' + self.backup_path)
         self.file = open(self.backup_path, 'w')
         self.set_field_names(line.split('(')[1].split(')')[0].split(', '))
         self.file.write(line)

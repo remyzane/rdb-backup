@@ -66,7 +66,7 @@ class MysqlLocal(DatabaseProcessor):
                 if line.startswith('DROP TABLE IF EXISTS '):
                     sign = 0
                     if table_sql:
-                        table_sql.file.close()
+                        table_sql.close()
                     table_sql = None
                     insert_str = None
                     insert_str_length = None
@@ -134,7 +134,6 @@ class MysqlTable(TableProcessor):
     processor_name = 'mysql'
 
     def begin_backup(self, fields):
-        log.info('backup ' + self.backup_path)
         self.set_field_names(fields)
         self.file = open(self.backup_path, 'w')
 

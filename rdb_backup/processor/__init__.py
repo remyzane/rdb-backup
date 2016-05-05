@@ -94,11 +94,15 @@ class TableProcessor(object):
     def __init__(self, db, name, define=None):
         self.db = db
         self.name = name
-        self.define = define or dict()
         self.backup_path = db.backup_path.replace('{table_name}', name)
         self.field_names = None
         self.file = None
-        self.filter = self.define.get('filter', None)
+        if not define:
+            self.define = dict()
+            self.filter = None
+        else:
+            self.define = define
+            self.filter = self.define.get('filter', None)
         if self.filter:
             if not ('>' in self.filter or '>' in self.filter or '=' in self.filter):
                 raise SyntaxError('unknown filter syntax [%s] in %s.%s, filter only support [>, <, =]' %
@@ -116,6 +120,22 @@ class TableProcessor(object):
             return record[self.field_names.index(field_name)]
         except ValueError:
             raise IndexError('defined field name [%s] not exists in table [%s.%s]' % (field_name, self.db.name, self.name))
+
+    def close(self):
+        self.file.close()
+        statinfo = os.stat(self.backup_path)
+        size = statinfo.st_size
+        if size == 0:
+            size_string = '0'
+        else:
+            size = size / 1048576.0     # 1048576 = 1024 * 1024
+            if size > 99999:
+                size_string = 'FFFFF'
+            elif size < 1:
+                size_string = '.'
+            else:
+                size_string = str(int(size))
+        log.info('backup %s MB %s', size_string.rjust(5), self.backup_path)
 
 
 # generate in rdb_backup.utility.init_processor
