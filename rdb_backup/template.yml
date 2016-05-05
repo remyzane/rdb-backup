@@ -1,6 +1,6 @@
 
 communal:
-
+  debug: true                                 # don't remove template sql file
   backup_root: /backup-root
   backup_path: '{db_name}/{table_name}.sql'   # {dbms_name}  {date_time}
   #chmod: u+rX,u-w,og-rwx                      # default u+rX,u-w,og-rwx
@@ -23,17 +23,20 @@ dbms2:
     processor: mysql
     username: root
     password: xxxx
+#    extended-insert: false    # default is true
 
-  database_2:
+
+  database_1:
 #    __db__:
 #      extended-insert: true
+
+  database_2:
 #    table_1:
 #      filter: id > 1000
 #    table_2:
 #      processor: customization_processor  # default (not need define)  |  processor_defined_youself
 #      customization_param1: xxx
 #      customization_param2: xxx
-
 
 # Logging
 logging:

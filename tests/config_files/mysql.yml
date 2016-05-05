@@ -10,21 +10,21 @@ dbms_1:
     processor: mysql
     username: backup
     password: pukcab
+    extended-insert: false    # default is true
 
 
   database_1:
     __db__:
-      extended-insert: false
       ignore: 'table_2'
 
     table_1:
       filter: posttime > 1406642338
     pmw_infoimg:
       filter: memberGrade != None
-#
-#  database_2:
-#    __db__:
-#      ignore: 'session user_*'
+
+  database_2:
+    __db__:
+      extended-insert: true
 
 
 # Logging
@@ -57,5 +57,5 @@ logging:
 
   logger:
     default:                    # python module path e.g. email.mime.base
-      level: info
+      level: debug
       handler: default stream   # stream must on the last, otherwise the output will be chaos

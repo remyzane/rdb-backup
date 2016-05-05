@@ -89,8 +89,8 @@ def get_config(file_path, prefix=None):
             raise ProcessorNonexistent('database processor [%s] nonexistent.' % dbms_processor)
         for db_name, tbs in dbs.items():
             db_params = tbs.pop('__db__', {}) if tbs else {}
-            db_config = copy.deepcopy(db_params or {})
-            db_config.update(copy.deepcopy(dbms_config))
+            db_config = copy.deepcopy(dbms_config)
+            db_config.update(copy.deepcopy(db_params or {}))
             database = processor_class(dbms_name, db_name, db_config, tbs or {})
             databases.append(database)
     return communal_config, databases
