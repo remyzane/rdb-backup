@@ -35,6 +35,13 @@ class MysqlLocal(DatabaseProcessor):
             tables.append(item.strip().decode('utf8'))
         return tables[1:]
 
+    @staticmethod
+    def write_schema_sql(schema_sql, line):
+        if line.startswith('-- Dump completed on'):
+            schema_sql.write('-- Dump completed')   # clear date time info
+        else:
+            schema_sql.write(line)
+
     def backup(self, need_backup_tables):
         dump_params = '-u %s -p\'%s\' --lock-all-tables --extended-insert=false' % (self.username, self.password)
         run_shell('mysqldump %s %s > %s' % (dump_params, self.name, self.dump_sql), cwd=self.tmp_dir)
@@ -53,7 +60,7 @@ class MysqlLocal(DatabaseProcessor):
                     insert_str_length = len(insert_str)
                     if table_name in need_backup_tables:
                         table_sql = need_backup_tables[table_name]
-                schema_sql.write(line)
+                self.write_schema_sql(schema_sql, line)
             elif sign == 1:
                 if line.startswith('  `'):
                     fields.append(line[3:].split('`', 1)[0])
@@ -61,7 +68,7 @@ class MysqlLocal(DatabaseProcessor):
                     sign = 2
                     if table_sql:
                         table_sql.begin_backup(fields)
-                schema_sql.write(line)
+                self.write_schema_sql(schema_sql, line)
             elif sign == 2:
                 if line.startswith('DROP TABLE IF EXISTS '):
                     sign = 0
@@ -71,12 +78,12 @@ class MysqlLocal(DatabaseProcessor):
                     insert_str = None
                     insert_str_length = None
                     fields = []
-                    schema_sql.write(line)
+                    self.write_schema_sql(schema_sql, line)
                 elif line.startswith(insert_str):
                     if table_sql:
                         table_sql.write_record(line[insert_str_length:-3])
                 else:
-                    schema_sql.write(line)
+                    self.write_schema_sql(schema_sql, line)
 
         log.info('backup ' + self.schema_sql)
         if not self.debug:
