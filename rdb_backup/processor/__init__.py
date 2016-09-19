@@ -104,7 +104,7 @@ class TableProcessor(object):
             self.define = define
             self.filter = self.define.get('filter', None)
         if self.filter:
-            if not ('>' in self.filter or '>' in self.filter or '=' in self.filter):
+            if not ('>' in self.filter or '<' in self.filter or '=' in self.filter):
                 raise SyntaxError('unknown filter syntax [%s] in %s.%s, filter only support [>, <, =]' %
                                   (self.filter, self.db.name, self.name))
             self.filter = self.filter.split(maxsplit=2)
